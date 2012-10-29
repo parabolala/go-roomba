@@ -12,45 +12,45 @@ import (
 	"log"
 )
 
-const (
+var OpCodes = map[string]byte{
 	// Getting started commands
-	OPCODE_START byte = 128
-	OPCODE_BAUD  byte = 129
+	"Start": 128,
+	"Baud":  129,
 
 	// Mode commands
-	OPCODE_SAFE byte = 131
-	OPCODE_FULL byte = 132
+	"Safe": 131,
+	"Full": 132,
 
 	// Cleaning commands
-	OPCODE_CLEAN byte = 135
-	OPCODE_MAX   byte = 136
-	OPCODE_SPOT  byte = 134
+	"Clean": 135,
+	"Max":   136,
+	"Spot":  134,
 
-	OPCODE_SEEK_DOCK    byte = 143
-	OPCODE_SCHEDULE     byte = 167
-	OPCODE_SET_DAY_TIME byte = 168
-	OPCODE_POWER        byte = 133
+	"Seek_dock":    143,
+	"Schedule":     167,
+	"Set_day_time": 168,
+	"Power":        133,
 
 	// Actuator commands 
-	OPCODE_DRIVE        byte = 137
-	OPCODE_DIRECT_DRIVE byte = 145
-	OPCODE_DRIVE_PWM    byte = 146
-	OPCODE_MOTORS       byte = 138
-	OPCODE_PWM_MOTORS   byte = 144
-	OPCODE_LEDS         byte = 139
-	//OPCODE_SCHEDULING_LEDS byte = 162
-	//OPCODE_DIGITAL_LEDS_RAW byte = 163
-	//OPCODE_DIGITAL_LEDS_ASCII byte = 164
-	//OPCODE_BUTTONS byte = 165
-	OPCODE_SONG byte = 140
-	OPCODE_PLAY byte = 141
+	"Drive":        137,
+	"Direct_drive": 145,
+	"Drive_pwm":    146,
+	"Motors":       138,
+	"Pwm_motors":   144,
+	"Leds":         139,
+	//SchedulingLeds: 162
+	//DigitalLedsRaw: 163
+	//DigitalLedsASCII: 164
+	//Buttons: 165
+	"Song": 140,
+	"Play": 141,
 
 	// Input commands
-	OPCODE_SENSORS      byte = 142
-	OPCODE_QUERY_LIST   byte = 149
-	OPCODE_STREAM       byte = 148
-	OPCODE_PAUSE_STREAM byte = 150
-)
+	"Sensors":      142,
+	"Query_list":   149,
+	"Stream":       148,
+	"Pause_stream": 150,
+}
 
 const (
 	SENSOR_BUMP_WHEELS_DROPS = 7
@@ -126,8 +126,14 @@ func (this *Roomba) Open(baud uint) error {
 	return nil
 }
 
-func (this *Roomba) Write(p []byte) (n int, err error) {
+func (this *Roomba) Write(opcode byte, p []byte) (int, error) {
+	this.S.Write([]byte{opcode})
 	return this.S.Write(p)
+}
+
+func (this *Roomba) Write0(opcode byte) error {
+	_, err := this.Write(opcode, []byte{})
+	return err
 }
 
 func (this *Roomba) Read(p []byte) (n int, err error) {

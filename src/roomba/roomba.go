@@ -10,8 +10,7 @@ func MakeRoomba(port_name string) (*Roomba, error) {
 }
 
 func (this *Roomba) Start() error {
-	_, err := this.S.Write(pack([]interface{}{OPCODE_START}))
-	return err
+	return this.Write0(OpCodes["Start"])
 }
 
 func (this *Roomba) Passive() error {
@@ -20,15 +19,22 @@ func (this *Roomba) Passive() error {
 
 func (this *Roomba) Control() error {
 	this.Passive()
-	_, err := this.Write(pack([]interface{}{byte(130)})) // ?
-	return err
+	return this.Write0(130) // ?
 }
 
 func (this *Roomba) Drive(velocity, radius int16) error {
-	_, err := this.Write(pack([]interface{}{OPCODE_DRIVE, velocity, radius}))
+	_, err := this.Write(OpCodes["Drive"], pack([]interface{}{velocity, radius}))
 	return err
 }
 
 func (this *Roomba) Stop() error {
 	return this.Drive(0, 0)
+}
+
+func (this *Roomba) Clean() error {
+	return this.Write0(OpCodes["Clean"])
+}
+
+func (this *Roomba) Spot() error {
+	return this.Write0(OpCodes["Spot"])
 }
