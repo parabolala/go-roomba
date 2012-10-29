@@ -26,18 +26,18 @@ var OpCodes = map[string]byte{
 	"Max":   136,
 	"Spot":  134,
 
-	"Seek_dock":    143,
-	"Schedule":     167,
-	"Set_day_time": 168,
-	"Power":        133,
+	"Seek_dock":  143,
+	"Schedule":   167,
+	"SetDayTime": 168,
+	"Power":      133,
 
 	// Actuator commands 
-	"Drive":        137,
-	"Direct_drive": 145,
-	"Drive_pwm":    146,
-	"Motors":       138,
-	"Pwm_motors":   144,
-	"Leds":         139,
+	"Drive":       137,
+	"DirectDrive": 145,
+	"DrivePwm":    146,
+	"Motors":      138,
+	"PwmMotors":   144,
+	"Leds":        139,
 	//SchedulingLeds: 162
 	//DigitalLedsRaw: 163
 	//DigitalLedsASCII: 164
@@ -138,9 +138,4 @@ func (this *Roomba) Write0(opcode byte) error {
 
 func (this *Roomba) Read(p []byte) (n int, err error) {
 	return this.S.Read(p)
-}
-
-func (this *Roomba) ChangeBaudRate(baud uint) error {
-	this.S.Close()
-	return this.Open(baud)
 }
