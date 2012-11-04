@@ -45,10 +45,10 @@ var OpCodes = map[string]byte{
 	"Play": 141,
 
 	// Input commands
-	"Sensors":      142,
-	"Query_list":   149,
-	"Stream":       148,
-	"Pause_stream": 150,
+	"Sensors":     142,
+	"QueryList":   149,
+	"Stream":      148,
+	"PauseStream": 150,
 }
 
 const (
@@ -88,7 +88,62 @@ const (
 	SENSOR_REQUESTED_VELOCITY = 39
 	SENSOR_REQUESTED_RADIUS   = 40
 	//....
+	SENSOR_ALL = 100
 )
+
+var SENSOR_PACKET_LENGTH = map[byte]byte{
+	SENSOR_BUMP_WHEELS_DROPS: 1,
+	SENSOR_WALL:              1,
+	SENSOR_CLIFF_LEFT:        1,
+	SENSOR_CLIFF_FRONT_LEFT:  1,
+	SENSOR_CLIFF_FRONT_RIGHT: 1,
+	SENSOR_CLIFF_RIGHT:       1,
+	SENSOR_VIRTUAL_WALL:      1,
+	SENSOR_WHEEL_OVERCURRENT: 1,
+	SENSOR_DIRT_DETECT:       1,
+	//unused
+	16:                              3,
+	SENSOR_IR_OMNI:                  1,
+	SENSOR_IR_LEFT:                  1,
+	SENSOR_IR_RIGHT:                 1,
+	SENSOR_BUTTONS:                  1,
+	SENSOR_DISTANCE:                 2,
+	SENSOR_ANGLE:                    2,
+	SENSOR_CHARGING:                 1,
+	SENSOR_VOLTAGE:                  2,
+	SENSOR_CURRENT:                  2,
+	SENSOR_TEMPERATURE:              1,
+	SENSOR_BATTERY_CHARGE:           2,
+	SENSOR_BATTERY_CAPACITY:         2,
+	SENSOR_WALL_SIGNAL:              2,
+	SENSOR_CLIFF_LEFT_SIGNAL:        2,
+	SENSOR_CLIFF_FRONT_LEFT_SIGNAL:  2,
+	SENSOR_CLIFF_FRONT_RIGHT_SIGNAL: 2,
+	SENSOR_CLIFF_RIGHT_SIGNAL:       2,
+	//unused
+	32: 3,
+	33: 3,
+	SENSOR_CHARGING_SOURCE:    1,
+	SENSOR_OI_MODE:            1,
+	SENSOR_SONG_NUMBER:        1,
+	SENSOR_SONG_PLAYING:       1,
+	SENSOR_NUM_STREAM_PACKETS: 1,
+	SENSOR_REQUESTED_VELOCITY: 2,
+	SENSOR_REQUESTED_RADIUS:   2,
+	//....
+	// Group packets.
+	0:          26,
+	1:          10,
+	2:          6,
+	3:          10,
+	4:          14,
+	5:          12,
+	6:          52,
+	SENSOR_ALL: 100,
+	101:        28,
+	106:        12,
+	107:        9,
+}
 
 const WHEEL_SEPARATION = 298 // mm
 
@@ -138,7 +193,7 @@ func (this *Roomba) Write(opcode byte, p []byte) error {
 	return nil
 }
 
-func (this *Roomba) Write0(opcode byte) error {
+func (this *Roomba) WriteByte(opcode byte) error {
 	return this.Write(opcode, []byte{})
 }
 

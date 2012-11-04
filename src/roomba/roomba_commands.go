@@ -2,6 +2,7 @@
 package roomba
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -24,7 +25,7 @@ func MakeRoomba(port_name string) (*Roomba, error) {
 }
 
 func (this *Roomba) Start() error {
-	return this.Write0(OpCodes["Start"])
+	return this.WriteByte(OpCodes["Start"])
 }
 
 func (this *Roomba) Passive() error {
@@ -32,33 +33,33 @@ func (this *Roomba) Passive() error {
 }
 
 func (this *Roomba) Safe() error {
-	return this.Write0(OpCodes["Safe"])
+	return this.WriteByte(OpCodes["Safe"])
 }
 
 // Note: Use the Start command (128) to change the mode to Passive.
 func (this *Roomba) Full() error {
-	return this.Write0(OpCodes["Full"])
+	return this.WriteByte(OpCodes["Full"])
 }
 
 func (this *Roomba) Control() error {
 	this.Passive()
-	return this.Write0(130) // ?
+	return this.WriteByte(130) // ?
 }
 
 func (this *Roomba) Clean() error {
-	return this.Write0(OpCodes["Clean"])
+	return this.WriteByte(OpCodes["Clean"])
 }
 
 func (this *Roomba) Spot() error {
-	return this.Write0(OpCodes["Spot"])
+	return this.WriteByte(OpCodes["Spot"])
 }
 
 func (this *Roomba) SeekDock() error {
-	return this.Write0(OpCodes["SeekDock"])
+	return this.WriteByte(OpCodes["SeekDock"])
 }
 
 func (this *Roomba) Power() error {
-	return this.Write0(OpCodes["Power"])
+	return this.WriteByte(OpCodes["Power"])
 }
 
 func (this *Roomba) Drive(velocity, radius int16) error {
@@ -83,10 +84,6 @@ func (this *Roomba) DirectDrive(right, left int16) error {
 	return this.Write(OpCodes["DirectDrive"], pack([]interface{}{right, left}))
 }
 
-// Drive PWM
-// Motors
-// PWM Motors
-
 func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, power_intensity byte) error {
 	var led_bits byte
 
@@ -96,4 +93,33 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 	}
 	return this.Write(OpCodes["LEDs"], pack([]interface{}{
 		led_bits, power_color, power_intensity}))
+}
+
+func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
+	this.Write(OpCodes["Sensor"], []byte{packet_id})
+	bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
+	result := make([]byte, bytes_to_read)
+	n, err := this.Read(result)
+	if byte(n) != bytes_to_read || err != nil {
+		return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+	}
+	return result, nil
+}
+
+func (this *Roomba) QueryList(packet_ids []byte) ([][]byte, error) {
+	b := new(bytes.Buffer)
+	b.WriteByte(byte(len(packet_ids)))
+	b.Write(packet_ids)
+	this.Write(OpCodes["QueryList"], b.Bytes())
+
+	result := make([][]byte, len(packet_ids))
+	for i, packet_id := range packet_ids {
+		bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
+		result[i] = make([]byte, bytes_to_read)
+		n, err := this.Read(result[i])
+		if byte(n) != bytes_to_read || err != nil {
+			return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+		}
+	}
+	return result, nil
 }

@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"time"
 	"roomba"
+	"time"
 )
 
 func main() {
