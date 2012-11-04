@@ -1,5 +1,4 @@
 // Low-level roomba interaction entities.
-
 package roomba
 
 import (
@@ -37,7 +36,7 @@ var OpCodes = map[string]byte{
 	"DrivePwm":    146,
 	"Motors":      138,
 	"PwmMotors":   144,
-	"Leds":        139,
+	"LEDs":        139,
 	//SchedulingLeds: 162
 	//DigitalLedsRaw: 163
 	//DigitalLedsASCII: 164
@@ -103,7 +102,7 @@ func pack(data []interface{}) []byte {
 	for _, v := range data {
 		err := binary.Write(buf, binary.BigEndian, v)
 		if err != nil {
-			log.Fatal("binary.Write failed:", err)
+			log.Fatal("failed packing bytes:", err)
 		}
 	}
 	return buf.Bytes()
@@ -111,29 +110,36 @@ func pack(data []interface{}) []byte {
 
 func (this *Roomba) Open(baud uint) error {
 	if baud != 115200 && baud != 19200 {
-		return errors.New(fmt.Sprintf("Invalid baud rate: %u. Must be one of 115200, 19200", baud))
+		return errors.New(fmt.Sprintf("invalid baud rate: %u. Must be one of 115200, 19200", baud))
 	}
 
 	c := &serial.Config{Name: this.PortName, Baud: int(baud)}
 	port, err := serial.OpenPort(c)
 
 	if err != nil {
-		log.Printf("Failed to open serial port: %s", this.PortName)
+		log.Printf("failed to open serial port: %s", this.PortName)
 		return err
 	}
 	this.S = port
-	log.Printf("Opened serial port: %s", this.PortName)
+	log.Printf("opened serial port: %s", this.PortName)
 	return nil
 }
 
-func (this *Roomba) Write(opcode byte, p []byte) (int, error) {
-	this.S.Write([]byte{opcode})
-	return this.S.Write(p)
+func (this *Roomba) Write(opcode byte, p []byte) error {
+	n, err := this.S.Write([]byte{opcode})
+	if n != 1 || err != nil {
+		return fmt.Errorf("failed writing opcode %d to serial interface",
+			opcode)
+	}
+	n, err = this.S.Write(p)
+	if n != len(p) || err != nil {
+		return fmt.Errorf("failed writing command to serial interface: % d", p)
+	}
+	return nil
 }
 
 func (this *Roomba) Write0(opcode byte) error {
-	_, err := this.Write(opcode, []byte{})
-	return err
+	return this.Write(opcode, []byte{})
 }
 
 func (this *Roomba) Read(p []byte) (n int, err error) {

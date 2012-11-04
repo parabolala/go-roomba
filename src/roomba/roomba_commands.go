@@ -1,10 +1,20 @@
 // iRobot roomba open interface
-
 package roomba
 
 import (
-	"log"
+	"fmt"
 )
+
+func to_byte(b bool) byte {
+	var res byte
+	switch b {
+	case false:
+		res = 0
+	case true:
+		res = 1
+	}
+	return res
+}
 
 func MakeRoomba(port_name string) (*Roomba, error) {
 	roomba := &Roomba{PortName: port_name}
@@ -53,13 +63,12 @@ func (this *Roomba) Power() error {
 
 func (this *Roomba) Drive(velocity, radius int16) error {
 	if !(-500 <= velocity && velocity <= 500) {
-		log.Fatalf("Invalid velocity: %d", velocity)
+		return fmt.Errorf("invalid velocity: %d", velocity)
 	}
 	if !(-2000 <= radius && radius <= 2000) {
-		log.Fatalf("Invalid readius: %d", radius)
+		fmt.Errorf("invalid readius: %d", radius)
 	}
-	_, err := this.Write(OpCodes["Drive"], pack([]interface{}{velocity, radius}))
-	return err
+	return this.Write(OpCodes["Drive"], pack([]interface{}{velocity, radius}))
 }
 
 func (this *Roomba) Stop() error {
@@ -69,12 +78,22 @@ func (this *Roomba) Stop() error {
 func (this *Roomba) DirectDrive(right, left int16) error {
 	if !(-500 <= right && right <= 500) ||
 		!(-500 <= left && left <= 500) {
-		log.Fatalf("Invalid velocity")
+		return fmt.Errorf("invalid velocity. one of %d or %d", right, left)
 	}
-	_, err := this.Write(OpCodes["DirectDrive"], pack([]interface{}{right, left}))
-	return err
+	return this.Write(OpCodes["DirectDrive"], pack([]interface{}{right, left}))
 }
 
 // Drive PWM
 // Motors
 // PWM Motors
+
+func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, power_intensity byte) error {
+	var led_bits byte
+
+	for _, bit := range []bool{check_robot, dock, spot, debris} {
+		led_bits <<= 1
+		led_bits |= to_byte(bit)
+	}
+	return this.Write(OpCodes["LEDs"], pack([]interface{}{
+		led_bits, power_color, power_intensity}))
+}
