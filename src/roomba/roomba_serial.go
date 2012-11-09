@@ -45,10 +45,10 @@ var OpCodes = map[string]byte{
 	"Play": 141,
 
 	// Input commands
-	"Sensors":     142,
-	"QueryList":   149,
-	"Stream":      148,
-	"PauseStream": 150,
+	"Sensors":      142,
+	"QueryList":    149,
+	"Stream":       148,
+	"ResumeStream": 150,
 }
 
 const (
@@ -148,8 +148,9 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 const WHEEL_SEPARATION = 298 // mm
 
 type Roomba struct {
-	PortName string
-	S        io.ReadWriteCloser
+	PortName     string
+	S            io.ReadWriteCloser
+	StreamPaused chan bool
 }
 
 func pack(data []interface{}) []byte {
@@ -165,7 +166,7 @@ func pack(data []interface{}) []byte {
 
 func (this *Roomba) Open(baud uint) error {
 	if baud != 115200 && baud != 19200 {
-		return errors.New(fmt.Sprintf("invalid baud rate: %u. Must be one of 115200, 19200", baud))
+		return errors.New(fmt.Sprintf("invalid baud rate: %d. Must be one of 115200, 19200", baud))
 	}
 
 	c := &serial.Config{Name: this.PortName, Baud: int(baud)}
