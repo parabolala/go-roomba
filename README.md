@@ -11,7 +11,7 @@ Also, I have no idea how to write and/or launch Go code, but
     git clone https://github.com/xa4a/go-roomba.git
     cd go-roomba
     export GOPATH=`pwd`
-    go build src/roomba/roomba.go
+    go build roomba
     go install
     go run roomba_run.go
 
