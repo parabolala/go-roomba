@@ -149,6 +149,7 @@ func (this *Roomba) ReadStream(packet_ids []byte, out chan<- [][]byte) {
 			close(out)
 			return
 		default:
+			// Read single stream frame.
 			bytes_read := 0
 			for bytes_read < len(buf) {
 				n, err := this.S.Read(buf[bytes_read:])
@@ -157,15 +158,16 @@ func (this *Roomba) ReadStream(packet_ids []byte, out chan<- [][]byte) {
 				}
 				if err != nil {
 					if err == io.EOF {
-						log.Printf("eof in stream: %s", err)
 						return
 					}
 					goto Loop
 				}
 			}
+			// Process frame.
 			buf_r := bytes.NewReader(buf)
 			if b, err := buf_r.ReadByte(); err != nil || b != 19 {
 				log.Fatalf("stream data doesn't start with header 19")
+				return
 			}
 			if b, err := buf_r.ReadByte(); err != nil || b != byte(len(buf)-3) {
 				log.Fatalf("invalid N-bytes: %d, expected %d.", buf[1],

@@ -32,7 +32,6 @@ func VerifyWritten(r *Roomba, expected []byte, t *testing.T) {
 	if buffer, ok := r.S.(*CloseableRWBuffer); ok {
 		actual := buffer.w.Bytes()
 
-		t.Logf("%d ", actual)
 		if len(actual) != len(expected) {
 			t.Errorf("actual written length (%d) doesn't match expected (%d).",
 				len(actual), len(expected))
