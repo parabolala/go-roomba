@@ -8,6 +8,7 @@ import (
 
 func main() {
 	r, err := roomba.MakeRoomba("/dev/cu.usbserial-FTTL3AW0")
+    roomba.Start()
 	if err != nil {
 		log.Fatal("Making roomba failed")
 	}

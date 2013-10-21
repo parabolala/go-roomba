@@ -26,6 +26,7 @@ func MakeRoomba(port_name string) (*Roomba, error) {
 	return roomba, err
 }
 
+// Note: Use the Start command (128) to change the mode to Passive.
 func (this *Roomba) Start() error {
 	return this.WriteByte(OpCodes["Start"])
 }
@@ -38,7 +39,6 @@ func (this *Roomba) Safe() error {
 	return this.WriteByte(OpCodes["Safe"])
 }
 
-// Note: Use the Start command (128) to change the mode to Passive.
 func (this *Roomba) Full() error {
 	return this.WriteByte(OpCodes["Full"])
 }
