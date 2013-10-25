@@ -30,7 +30,7 @@ var OpCodes = map[string]byte{
 	"SetDayTime": 168,
 	"Power":      133,
 
-	// Actuator commands 
+	// Actuator commands
 	"Drive":       137,
 	"DirectDrive": 145,
 	"DrivePwm":    146,

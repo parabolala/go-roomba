@@ -1,8 +1,8 @@
 package roomba
 
 import (
-    "testing"
-    "bytes"
+	"bytes"
+	"testing"
 )
 
 type CloseableRWBuffer struct {
