@@ -13,6 +13,10 @@ func (this *CloseableRWBuffer) Read(p []byte) (int, error) {
 	return this.r.Read(p)
 }
 
+func (this *CloseableRWBuffer) WriteReadBuffer(p []byte) {
+    this.r.Write(p)
+}
+
 func (this *CloseableRWBuffer) Write(p []byte) (int, error) {
 	return this.w.Write(p)
 }
