@@ -100,10 +100,16 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
 	this.Write(OpCodes["Sensor"], []byte{packet_id})
 	bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
+	var err error
+	var n int
 	result := make([]byte, bytes_to_read)
-	n, err := this.Read(result)
-	if byte(n) != bytes_to_read || err != nil {
-		return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+	for byte(n) < bytes_to_read {
+		result_view := result[n:]
+		bytes_to_read -= byte(n)
+		n, err = this.Read(result_view)
+		if err != nil {
+			return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+		}
 	}
 	return result, nil
 }
@@ -114,13 +120,20 @@ func (this *Roomba) QueryList(packet_ids []byte) ([][]byte, error) {
 	b.Write(packet_ids)
 	this.Write(OpCodes["QueryList"], b.Bytes())
 
+	var err error
+	var n int
 	result := make([][]byte, len(packet_ids))
 	for i, packet_id := range packet_ids {
 		bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
 		result[i] = make([]byte, bytes_to_read)
-		n, err := this.Read(result[i])
-		if byte(n) != bytes_to_read || err != nil {
-			return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+		err, n = nil, 0
+		for byte(n) < bytes_to_read {
+			result_view := result[i][n:]
+			bytes_to_read -= byte(n)
+			n, err = this.Read(result_view)
+			if err != nil {
+				return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+			}
 		}
 	}
 	return result, nil
