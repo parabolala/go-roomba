@@ -1,36 +1,42 @@
 //Tests for roomba package functions
-package roomba
+package roomba_test
 
 import (
 	"testing"
+
+	"roomba/constants"
+	rt "roomba/testing"
 )
 
 func TestDrive(t *testing.T) {
 	expected := []byte{137, 255, 56, 1, 244}
-	r := MakeTestRoomba()
+	r := rt.MakeTestRoomba()
+	defer rt.ClearTestRoomba()
 	r.Drive(-200, 500)
-	VerifyWritten(r, expected, t)
+	rt.VerifyWritten(r, expected, t)
 }
 
 func TestLEDs(t *testing.T) {
 	expected := []byte{139, 4, 0, 128}
-	r := MakeTestRoomba()
+	r := rt.MakeTestRoomba()
+	defer rt.ClearTestRoomba()
 	r.LEDs(false, true, false, false, 0, 128)
-	VerifyWritten(r, expected, t)
+	rt.VerifyWritten(r, expected, t)
 }
 
 func TestQueryLists(t *testing.T) {
 	output := []byte{3, 5}
-	r := MakeTestRoomba()
-	r.S.(*CloseableRWBuffer).r.Write(output)
+	r := rt.MakeTestRoomba()
+	defer rt.ClearTestRoomba()
 
 	expected_input := []byte{149, 2, 7, 13}
-	res, err := r.QueryList([]byte{SENSOR_BUMP_WHEELS_DROPS,
-		SENSOR_VIRTUAL_WALL})
+	res, err := r.QueryList([]byte{
+		constants.SENSOR_BUMP_WHEELS_DROPS,
+		constants.SENSOR_VIRTUAL_WALL})
 	if err != nil {
-		t.Fatal("error querying senors")
+		t.Fatalf("error querying sensors: %s", err)
 	}
-	VerifyWritten(r, expected_input, t)
+	rt.VerifyWritten(r, expected_input, t)
 	for i, b := range res {
 		if len(b) != 1 {
 			t.Errorf("query_list returned wrong packet len for packet_id %d",
@@ -44,18 +50,18 @@ func TestQueryLists(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	expected_data := [][]byte{{2, 25}, {0}}
-	output := []byte{19, 5, 29, 2, 25, 13, 0, 182}
-	r := MakeTestRoomba()
-	r.S.(*CloseableRWBuffer).r.Write(output)
+	r := rt.MakeTestRoomba()
+	defer rt.ClearTestRoomba()
 
 	expected_input := []byte{148, 2, 29, 13}
-	out, err := r.Stream([]byte{SENSOR_CLIFF_FRONT_LEFT_SIGNAL,
-		SENSOR_VIRTUAL_WALL})
+	out, err := r.Stream([]byte{
+		constants.SENSOR_CLIFF_FRONT_LEFT_SIGNAL,
+		constants.SENSOR_VIRTUAL_WALL})
 	if err != nil {
 		t.Fatal("error querying senors")
 	}
 	response := <-out
-	VerifyWritten(r, expected_input, t)
+	rt.VerifyWritten(r, expected_input, t)
 	for i, packet_data := range response {
 		for j, packet_byte := range packet_data {
 			if expected_data[i][j] != packet_byte {
@@ -66,9 +72,8 @@ func TestStream(t *testing.T) {
 }
 
 func TestPauseStream(t *testing.T) {
-	output := []byte{19, 1, 235}
-	r := MakeTestRoomba()
-	r.S.(*CloseableRWBuffer).r.Write(output)
+	r := rt.MakeTestRoomba()
+	defer rt.ClearTestRoomba()
 	r.PauseStream()
 	out, _ := r.Stream([]byte{})
 	_, ok := <-out
@@ -76,5 +81,5 @@ func TestPauseStream(t *testing.T) {
 		t.Fatalf("non-empty channel return by empty stream")
 	}
 	expected_input := []byte{148, 0, 150, 0}
-	VerifyWritten(r, expected_input, t)
+	rt.VerifyWritten(r, expected_input, t)
 }

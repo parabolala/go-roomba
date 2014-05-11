@@ -1,4 +1,5 @@
-// iRobot roomba open interface
+// Package roomba iRobot roomba open interface.
+
 package roomba
 
 import (
@@ -6,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+
+	"roomba/constants"
 )
 
 func to_byte(b bool) byte {
@@ -18,6 +21,8 @@ func to_byte(b bool) byte {
 	}
 	return res
 }
+
+var OpCodes = constants.OpCodes
 
 func MakeRoomba(port_name string) (*Roomba, error) {
 	roomba := &Roomba{PortName: port_name, StreamPaused: make(chan bool, 1)}
@@ -98,8 +103,8 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 }
 
 func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
-	this.Write(OpCodes["Sensor"], []byte{packet_id})
-	bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
+	this.Write(OpCodes["Sensors"], []byte{packet_id})
+	bytes_to_read := constants.SENSOR_PACKET_LENGTH[packet_id]
 	var err error
 	var n int
 	result := make([]byte, bytes_to_read)
@@ -108,7 +113,8 @@ func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
 		bytes_to_read -= byte(n)
 		n, err = this.Read(result_view)
 		if err != nil {
-			return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+			log.Printf("error %v", err)
+			return result, fmt.Errorf("failed reading sensors data for packet id %d: %s", packet_id, err)
 		}
 	}
 	return result, nil
@@ -124,7 +130,7 @@ func (this *Roomba) QueryList(packet_ids []byte) ([][]byte, error) {
 	var n int
 	result := make([][]byte, len(packet_ids))
 	for i, packet_id := range packet_ids {
-		bytes_to_read := SENSOR_PACKET_LENGTH[packet_id]
+		bytes_to_read := constants.SENSOR_PACKET_LENGTH[packet_id]
 		result[i] = make([]byte, bytes_to_read)
 		err, n = nil, 0
 		for byte(n) < bytes_to_read {
@@ -132,7 +138,7 @@ func (this *Roomba) QueryList(packet_ids []byte) ([][]byte, error) {
 			bytes_to_read -= byte(n)
 			n, err = this.Read(result_view)
 			if err != nil {
-				return result, fmt.Errorf("failed reading sensors data for packet id %d", packet_id)
+				return result, fmt.Errorf("failed reading sensors data for packet id %d: %s", packet_id, err)
 			}
 		}
 	}
@@ -147,7 +153,7 @@ func (this *Roomba) ReadStream(packet_ids []byte, out chan<- [][]byte) {
 
 	var data_length byte = 0
 	for _, packet_id := range packet_ids {
-		data_length += SENSOR_PACKET_LENGTH[packet_id]
+		data_length += constants.SENSOR_PACKET_LENGTH[packet_id]
 	}
 
 	// Input buffer. 3 is for 19, N-bytes and checksum.
@@ -195,7 +201,7 @@ func (this *Roomba) ReadStream(packet_ids []byte, out chan<- [][]byte) {
 			packet_id, err := buf_r.ReadByte()
 			for ; err == nil; packet_id, err = buf_r.ReadByte() {
 				sum += packet_id
-				bytes_to_read := int(SENSOR_PACKET_LENGTH[packet_id])
+				bytes_to_read := int(constants.SENSOR_PACKET_LENGTH[packet_id])
 				bytes_read := 0
 				result[i] = make([]byte, bytes_to_read)
 
