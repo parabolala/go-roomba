@@ -1,3 +1,9 @@
+/*
+Package sim defines a limited OpenInterface simulator type that's mainly used for testing.
+
+Simulator can be created using MakeRoombaSim() function, which returns a
+simulator instance and a ReadWriter, suitable for passing to go-roomba client.
+*/
 package sim
 
 import (
@@ -7,76 +13,90 @@ import (
 	"io"
 	"log"
 
+	"roomba"
 	"roomba/constants"
 )
 
+// Roomba simulator instance. Should be constructed with MakeRoombaSim()
+// function.
 type RoombaSimulator struct {
 	rw           io.ReadWriter
 	writeQ       chan []byte
-	WrittenBytes bytes.Buffer
-	ReadBytes    bytes.Buffer
+	WrittenBytes bytes.Buffer // Logs all the bytes written by the simulator to its Writer.
+	ReadBytes    bytes.Buffer // Logs all the bytes read by the simulator from its Reader.
 }
 
+// MockSensorValues contains mapping of sensor codes to sensor values returned
+// by a RoombaSimulator object on sensor requests.
 var MockSensorValues = map[byte][]byte{
-	constants.SENSOR_BUMP_WHEELS_DROPS: []byte{3},
-	constants.SENSOR_VIRTUAL_WALL:      []byte{5},
-	constants.SENSOR_CLIFF_RIGHT:       []byte{42},
-	constants.SENSOR_DISTANCE:          []byte{10, 20},
-	constants.SENSOR_WALL:              []byte{35},
+	constants.SENSOR_BUMP_WHEELS_DROPS:  []byte{3},
+	constants.SENSOR_VIRTUAL_WALL:       []byte{5},
+	constants.SENSOR_CLIFF_RIGHT:        []byte{42},
+	constants.SENSOR_DISTANCE:           []byte{10, 20},
+	constants.SENSOR_WALL:               []byte{35},
+	constants.SENSOR_BATTERY_CHARGE:     roomba.Pack([]interface{}{uint16(1000)}),
+	constants.SENSOR_BATTERY_CAPACITY:   roomba.Pack([]interface{}{uint16(1500)}),
+	constants.SENSOR_REQUESTED_VELOCITY: roomba.Pack([]interface{}{int16(142)}),
 }
 
-func (mock *RoombaSimulator) Serve() {
+func (sim *RoombaSimulator) serve() {
 	// Write bytes from channel asynchronously.
 	go func() {
 		for {
-			bs := <-mock.writeQ
-			mock.WrittenBytes.Write(bs)
-			mock.rw.Write(bs)
+			bs := <-sim.writeQ
+			if len(bs) == 0 {
+				break
+			}
+			sim.rw.Write(bs)
 		}
 	}()
 
 	for {
-		mock.ExecuteCMD()
+		sim.executeCMD()
 	}
 }
 
-func (mock *RoombaSimulator) ExecuteCMD() error {
-	cmdBuf := mock.read(1)
+func (sim *RoombaSimulator) Stop() {
+	sim.writeQ <- []byte{}
+}
+
+func (sim *RoombaSimulator) executeCMD() error {
+	cmdBuf := sim.read(1)
 	if len(cmdBuf) != 1 {
 		return fmt.Errorf("failed reading opcode")
 	}
 	switch cmdBuf[0] {
 	case constants.OpCodes["Sensors"]:
-		packetId := mock.read(1)[0]
+		packetId := sim.read(1)[0]
 		value, ok := MockSensorValues[packetId]
 		if !ok {
 			log.Printf("no mock value for sensor packet id %d", packetId)
 		}
 		log.Printf("sensor %d value: %v", packetId, value)
-		mock.write(value)
+		sim.write(value)
 	case constants.OpCodes["QueryList"]:
-		nPackets := mock.read(1)[0]
+		nPackets := sim.read(1)[0]
 		for i := 0; i < int(nPackets); i++ {
-			packetId := mock.read(1)[0]
+			packetId := sim.read(1)[0]
 			value, ok := MockSensorValues[packetId]
 			if !ok {
 				log.Printf("no mock value for sensor packet id %d", packetId)
 			}
 			log.Printf("sensor %d value: %v", packetId, value)
-			mock.write(value)
+			sim.write(value)
 		}
 	case constants.OpCodes["Stream"]:
-		nBytes := mock.read(1)[0]
+		nBytes := sim.read(1)[0]
 		if nBytes != 0 {
 			output := []byte{19, 5, 29, 2, 25, 13, 0, 182}
-			mock.write(output)
+			sim.write(output)
 		}
 	case constants.OpCodes["Start"]:
 		log.Printf("switched to passive mode")
 	case constants.OpCodes["Safe"]:
 		log.Printf("switched to safe mode")
 	case constants.OpCodes["DirectDrive"]:
-		data := mock.read(4)
+		data := sim.read(4)
 		var rigthVelocity, leftVelocity int16
 		binary.Read(bytes.NewReader(data[:2]), binary.BigEndian, &rigthVelocity)
 		binary.Read(bytes.NewReader(data[2:4]), binary.BigEndian, &leftVelocity)
@@ -88,10 +108,10 @@ func (mock *RoombaSimulator) ExecuteCMD() error {
 	return nil
 }
 
-// Reads given number of bytes from the Reader mock.r.
-func (mock *RoombaSimulator) read(n int) []byte {
+// Reads given number of bytes from the Reader sim.r.
+func (sim *RoombaSimulator) read(n int) []byte {
 	buf := make([]byte, n)
-	nRead, err := mock.rw.Read(buf)
+	nRead, err := sim.rw.Read(buf)
 	if n != nRead {
 		if err != nil {
 			log.Printf("error reading in RoombaSimulator: %v", err)
@@ -100,14 +120,14 @@ func (mock *RoombaSimulator) read(n int) []byte {
 		return []byte{}
 	}
 	log.Printf("roomba reads: %v", buf)
-	mock.ReadBytes.Write(buf)
+	sim.ReadBytes.Write(buf)
 	return buf
 }
 
 // Writes bytes to the Writer w asynchronously.
-func (mock *RoombaSimulator) write(b []byte) {
+func (sim *RoombaSimulator) write(b []byte) {
 	log.Printf("roomba says: %v", b)
-	mock.writeQ <- b
+	sim.writeQ <- b
 }
 
 // Helper for merging reader and writer into a ReadWriter.
@@ -126,7 +146,7 @@ func MakeRoombaSim() (*RoombaSimulator, *readWriter) {
 	readBytes := &bytes.Buffer{}
 	writtenBytes := &bytes.Buffer{}
 
-	mock := &RoombaSimulator{
+	sim := &RoombaSimulator{
 		rw: &readWriter{
 			// Log all read bytes to ReadBytes.
 			io.TeeReader(inp_r, readBytes),
@@ -136,9 +156,9 @@ func MakeRoombaSim() (*RoombaSimulator, *readWriter) {
 		writeQ:    make(chan []byte, 15),
 		ReadBytes: *readBytes,
 	}
-	go mock.Serve()
+	go sim.serve()
 
 	rw := &readWriter{out_r, inp_w}
 
-	return mock, rw
+	return sim, rw
 }

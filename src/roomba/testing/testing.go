@@ -24,6 +24,7 @@ func MakeTestRoomba() *roomba.Roomba {
 
 func ClearTestRoomba() {
 	mockRoombaClient = nil
+	roombaSim.Stop()
 	roombaSim = nil
 }
 

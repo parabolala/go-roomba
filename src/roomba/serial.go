@@ -12,7 +12,7 @@ import (
 	"github.com/tarm/goserial"
 )
 
-func pack(data []interface{}) []byte {
+func Pack(data []interface{}) []byte {
 	buf := new(bytes.Buffer)
 	for _, v := range data {
 		err := binary.Write(buf, binary.BigEndian, v)

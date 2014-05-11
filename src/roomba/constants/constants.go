@@ -1,5 +1,7 @@
+// Package constants defines values for OpenInterface op codes, sensor codes and sensor packet lengths among others.
 package constants
 
+// OpCodes is a map[string]byte that defines the op codes for Open Interface commands.
 var OpCodes = map[string]byte{
 	// Getting started commands
 	"Start": 128,
@@ -40,6 +42,7 @@ var OpCodes = map[string]byte{
 	"ResumeStream": 150,
 }
 
+// SENSOR_* constants define the packet IDs for declared sensor packets.
 const (
 	SENSOR_BUMP_WHEELS_DROPS = 7
 	SENSOR_WALL              = 8
@@ -80,6 +83,7 @@ const (
 	SENSOR_ALL = 100
 )
 
+// SENSOR_PACKET_LENGTH is a map[byte]byte that defines the length in bytes of sensor data packets.
 var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_BUMP_WHEELS_DROPS: 1,
 	SENSOR_WALL:              1,

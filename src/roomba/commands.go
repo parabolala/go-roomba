@@ -76,7 +76,7 @@ func (this *Roomba) Drive(velocity, radius int16) error {
 	if !(-2000 <= radius && radius <= 2000) {
 		fmt.Errorf("invalid readius: %d", radius)
 	}
-	return this.Write(OpCodes["Drive"], pack([]interface{}{velocity, radius}))
+	return this.Write(OpCodes["Drive"], Pack([]interface{}{velocity, radius}))
 }
 
 func (this *Roomba) Stop() error {
@@ -88,7 +88,7 @@ func (this *Roomba) DirectDrive(right, left int16) error {
 		!(-500 <= left && left <= 500) {
 		return fmt.Errorf("invalid velocity. one of %d or %d", right, left)
 	}
-	return this.Write(OpCodes["DirectDrive"], pack([]interface{}{right, left}))
+	return this.Write(OpCodes["DirectDrive"], Pack([]interface{}{right, left}))
 }
 
 func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, power_intensity byte) error {
@@ -98,7 +98,7 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 		led_bits <<= 1
 		led_bits |= to_byte(bit)
 	}
-	return this.Write(OpCodes["LEDs"], pack([]interface{}{
+	return this.Write(OpCodes["LEDs"], Pack([]interface{}{
 		led_bits, power_color, power_intensity}))
 }
 
