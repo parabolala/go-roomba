@@ -1,19 +1,29 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"roomba"
 	"time"
 )
 
+const (
+	defaultPort = "/dev/cu.usbserial-FTTL3AW0"
+)
+
+var (
+	portName = flag.String("port", defaultPort, "roomba's serial port name")
+)
+
 func main() {
-	r, err := roomba.MakeRoomba("/dev/cu.usbserial-FTTL3AW0")
-	roomba.Start()
+	flag.Parse()
+	r, err := roomba.MakeRoomba(*portName)
 	if err != nil {
 		log.Fatal("Making roomba failed")
 	}
+	r.Safe()
 	r.Drive(40, 200)
-	t := time.Tick(700 * time.Millisecond)
+	t := time.Tick(1000 * time.Millisecond)
 	<-t
 	r.Stop()
 }

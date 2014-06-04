@@ -13,7 +13,7 @@ Also, I have no idea how to write and/or launch Go code, but
     export GOPATH=`pwd`
     go build roomba
     go install
-    go run roomba_run.go
+    go run roomba_run.go  # -port=/dev/roomba_serial_port
 
 Should output:
 
