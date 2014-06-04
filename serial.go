@@ -1,4 +1,4 @@
-// Provides low-level functions for interacting woth Roomba port/socket/buffer.
+// Provides low-level functions for interacting with Roomba port/socket/buffer.
 
 package roomba
 
