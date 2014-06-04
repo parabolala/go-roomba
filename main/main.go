@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"log"
-	"roomba"
 	"time"
+
+	"github.com/xa4a/go-roomba"
 )
 
 const (

@@ -13,8 +13,8 @@ import (
 	"io"
 	"log"
 
-	"roomba"
-	"roomba/constants"
+	"github.com/xa4a/go-roomba"
+	"github.com/xa4a/go-roomba/constants"
 )
 
 // Roomba simulator instance. Should be constructed with MakeRoombaSim()

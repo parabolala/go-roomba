@@ -4,8 +4,8 @@ package roomba_test
 import (
 	"testing"
 
-	"roomba/constants"
-	rt "roomba/testing"
+	"github.com/xa4a/go-roomba/constants"
+	rt "github.com/xa4a/go-roomba/testing"
 )
 
 func TestDrive(t *testing.T) {
