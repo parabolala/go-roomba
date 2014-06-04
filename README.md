@@ -8,7 +8,7 @@ The code of the library is remotely inspired by `pyrobot` library by damonkohler
 
 I'm still not sure on how to package go libraries, but 
 
-    go install github.com/xa4a/go-roomba/go-roomba-test
+    go get github.com/xa4a/go-roomba/go-roomba-test
     go-roomba-test  # -port=/dev/roomba_serial_port
 
 Should output:
