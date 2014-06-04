@@ -6,14 +6,10 @@ Details
 ---
 The code of the library is remotely inspired by `pyrobot` library by damonkohler@gmail.com (Damon Kohler)
 
-Also, I have no idea how to write and/or launch Go code, but 
+I'm still not sure on how to package go libraries, but 
 
-    git clone https://github.com/xa4a/go-roomba.git
-    cd go-roomba
-    export GOPATH=`pwd`
-    go build roomba
-    go install
-    go run roomba_run.go  # -port=/dev/roomba_serial_port
+    go install github.com/xa4a/go-roomba/go-roomba-test
+    go-roomba-test  # -port=/dev/roomba_serial_port
 
 Should output:
 
