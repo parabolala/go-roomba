@@ -12,6 +12,7 @@ import (
 	"github.com/tarm/goserial"
 )
 
+// Packs the given data as big endian bytes.
 func Pack(data []interface{}) []byte {
 	buf := new(bytes.Buffer)
 	for _, v := range data {
@@ -23,6 +24,7 @@ func Pack(data []interface{}) []byte {
 	return buf.Bytes()
 }
 
+// Configures and opens the given serial port.
 func (this *Roomba) Open(baud uint) error {
 	if baud != 115200 && baud != 19200 {
 		return errors.New(fmt.Sprintf("invalid baud rate: %d. Must be one of 115200, 19200", baud))
@@ -40,6 +42,7 @@ func (this *Roomba) Open(baud uint) error {
 	return nil
 }
 
+// Writes the given opcode byte and a sequence of data bytes to the serial port.
 func (this *Roomba) Write(opcode byte, p []byte) error {
 	log.Printf("Writing opcode: %v, data %v", opcode, p)
 	n, err := this.S.Write([]byte{opcode})
@@ -54,10 +57,12 @@ func (this *Roomba) Write(opcode byte, p []byte) error {
 	return nil
 }
 
+// Writes a single byte to the serial port.
 func (this *Roomba) WriteByte(opcode byte) error {
 	return this.Write(opcode, []byte{})
 }
 
+// Reads bytes from the serial port.
 func (this *Roomba) Read(p []byte) (n int, err error) {
 	return this.S.Read(p)
 }
