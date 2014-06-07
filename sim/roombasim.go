@@ -24,19 +24,22 @@ type RoombaSimulator struct {
 	writeQ       chan []byte
 	WrittenBytes bytes.Buffer // Logs all the bytes written by the simulator to its Writer.
 	ReadBytes    bytes.Buffer // Logs all the bytes read by the simulator from its Reader.
+
+	RequestedVelocity []byte
+	RequestedRadius   []byte
 }
 
 // MockSensorValues contains mapping of sensor codes to sensor values returned
 // by a RoombaSimulator object on sensor requests.
 var MockSensorValues = map[byte][]byte{
-	constants.SENSOR_BUMP_WHEELS_DROPS:  []byte{3},
-	constants.SENSOR_VIRTUAL_WALL:       []byte{5},
-	constants.SENSOR_CLIFF_RIGHT:        []byte{42},
-	constants.SENSOR_DISTANCE:           []byte{10, 20},
-	constants.SENSOR_WALL:               []byte{35},
-	constants.SENSOR_BATTERY_CHARGE:     roomba.Pack([]interface{}{uint16(1000)}),
-	constants.SENSOR_BATTERY_CAPACITY:   roomba.Pack([]interface{}{uint16(1500)}),
-	constants.SENSOR_REQUESTED_VELOCITY: roomba.Pack([]interface{}{int16(142)}),
+	constants.SENSOR_BUMP_WHEELS_DROPS: []byte{3},
+	constants.SENSOR_VIRTUAL_WALL:      []byte{5},
+	constants.SENSOR_CLIFF_RIGHT:       []byte{42},
+	constants.SENSOR_DISTANCE:          []byte{10, 20},
+	constants.SENSOR_WALL:              []byte{35},
+	constants.SENSOR_BATTERY_CHARGE:    roomba.Pack([]interface{}{uint16(1000)}),
+	constants.SENSOR_BATTERY_CAPACITY:  roomba.Pack([]interface{}{uint16(1500)}),
+	//constants.SENSOR_REQUESTED_VELOCITY: roomba.Pack([]interface{}{int16(142)}),
 }
 
 func (sim *RoombaSimulator) serve() {
@@ -70,7 +73,13 @@ func (sim *RoombaSimulator) executeCMD() error {
 		packetId := sim.read(1)[0]
 		value, ok := MockSensorValues[packetId]
 		if !ok {
-			log.Printf("no mock value for sensor packet id %d", packetId)
+			if packetId == constants.SENSOR_REQUESTED_RADIUS {
+				value = sim.RequestedRadius
+			} else if packetId == constants.SENSOR_REQUESTED_VELOCITY {
+				value = sim.RequestedVelocity
+			} else {
+				log.Printf("no mock value for sensor packet id %d", packetId)
+			}
 		}
 		log.Printf("sensor %d value: %v", packetId, value)
 		sim.write(value)
@@ -80,7 +89,13 @@ func (sim *RoombaSimulator) executeCMD() error {
 			packetId := sim.read(1)[0]
 			value, ok := MockSensorValues[packetId]
 			if !ok {
-				log.Printf("no mock value for sensor packet id %d", packetId)
+				if packetId == constants.SENSOR_REQUESTED_RADIUS {
+					value = sim.RequestedRadius
+				} else if packetId == constants.SENSOR_REQUESTED_VELOCITY {
+					value = sim.RequestedVelocity
+				} else {
+					log.Printf("no mock value for sensor packet id %d", packetId)
+				}
 			}
 			log.Printf("sensor %d value: %v", packetId, value)
 			sim.write(value)
@@ -101,6 +116,10 @@ func (sim *RoombaSimulator) executeCMD() error {
 		binary.Read(bytes.NewReader(data[:2]), binary.BigEndian, &rigthVelocity)
 		binary.Read(bytes.NewReader(data[2:4]), binary.BigEndian, &leftVelocity)
 		log.Printf("DirectDrive: %d, %d (%v)", rigthVelocity, leftVelocity, data)
+	case constants.OpCodes["Drive"]:
+		sim.RequestedVelocity = sim.read(2)
+		sim.RequestedRadius = sim.read(2)
+		log.Printf("Drive: %d, %d", sim.RequestedVelocity, sim.RequestedRadius)
 	default:
 		log.Printf("unknown opcode: %d", cmdBuf[0])
 	}
@@ -108,7 +127,7 @@ func (sim *RoombaSimulator) executeCMD() error {
 	return nil
 }
 
-// Reads given number of bytes from the Reader sim.r.
+// Reads given number of bytes from the Reader sim.rw.
 func (sim *RoombaSimulator) read(n int) []byte {
 	buf := make([]byte, n)
 	nRead, err := sim.rw.Read(buf)
@@ -155,6 +174,9 @@ func MakeRoombaSim() (*RoombaSimulator, *readWriter) {
 		},
 		writeQ:    make(chan []byte, 15),
 		ReadBytes: *readBytes,
+
+		RequestedRadius:   []byte{0, 0},
+		RequestedVelocity: []byte{0, 0},
 	}
 	go sim.serve()
 
