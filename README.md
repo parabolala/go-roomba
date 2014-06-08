@@ -3,6 +3,7 @@ Go-Roomba
 A go library for interacting with iRobot Roomba or Create robots following the Open Interface (OI) specification.
 
 [![Build Status](https://travis-ci.org/xa4a/go-roomba.svg?branch=master)](https://travis-ci.org/xa4a/go-roomba)
+[![Coverage Status](https://img.shields.io/coveralls/xa4a/go-roomba.svg)](https://coveralls.io/r/xa4a/go-roomba?branch=master)
 
 Details
 ---
