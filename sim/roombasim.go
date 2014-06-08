@@ -39,7 +39,7 @@ var MockSensorValues = map[byte][]byte{
 	constants.SENSOR_WALL:              []byte{35},
 	constants.SENSOR_BATTERY_CHARGE:    roomba.Pack([]interface{}{uint16(1000)}),
 	constants.SENSOR_BATTERY_CAPACITY:  roomba.Pack([]interface{}{uint16(1500)}),
-	//constants.SENSOR_REQUESTED_VELOCITY: roomba.Pack([]interface{}{int16(142)}),
+	constants.SENSOR_CURRENT:           roomba.Pack([]interface{}{int16(-747)}),
 }
 
 func (sim *RoombaSimulator) serve() {
