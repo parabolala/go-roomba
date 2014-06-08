@@ -175,8 +175,12 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 // are 58 different sensor data packets. Each provides a value of a specific
 // sensor or group of sensors.
 func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
+	bytes_to_read, ok := constants.SENSOR_PACKET_LENGTH[packet_id]
+	if !ok {
+		return []byte{}, fmt.Errorf("unknown packet id requested: %d", packet_id)
+	}
+
 	this.Write(OpCodes["Sensors"], []byte{packet_id})
-	bytes_to_read := constants.SENSOR_PACKET_LENGTH[packet_id]
 	var err error
 	var n int
 	result := make([]byte, bytes_to_read)
@@ -196,6 +200,13 @@ func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
 // returned once, as in the Sensors command. The robot returns the packets in
 /// the order you specify.
 func (this *Roomba) QueryList(packet_ids []byte) ([][]byte, error) {
+	for _, packet_id := range packet_ids {
+		_, ok := constants.SENSOR_PACKET_LENGTH[packet_id]
+		if !ok {
+			return [][]byte{}, fmt.Errorf("unknown packet id requested: %d", packet_id)
+		}
+	}
+
 	b := new(bytes.Buffer)
 	b.WriteByte(byte(len(packet_ids)))
 	b.Write(packet_ids)
@@ -229,7 +240,12 @@ func (this *Roomba) PauseStream() {
 func (this *Roomba) ReadStream(packet_ids []byte, out chan<- [][]byte) {
 	var data_length byte
 	for _, packet_id := range packet_ids {
-		data_length += constants.SENSOR_PACKET_LENGTH[packet_id]
+		packet_length, ok := constants.SENSOR_PACKET_LENGTH[packet_id]
+		if !ok {
+			log.Printf("unknown packet id requested: %d", packet_id)
+			return
+		}
+		data_length += packet_length
 	}
 
 	// Input buffer. 3 is for 19, N-bytes and checksum.
