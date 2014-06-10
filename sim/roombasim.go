@@ -32,14 +32,18 @@ type RoombaSimulator struct {
 // MockSensorValues contains mapping of sensor codes to sensor values returned
 // by a RoombaSimulator object on sensor requests.
 var MockSensorValues = map[byte][]byte{
-	constants.SENSOR_BUMP_WHEELS_DROPS: []byte{3},
-	constants.SENSOR_VIRTUAL_WALL:      []byte{5},
-	constants.SENSOR_CLIFF_RIGHT:       []byte{42},
-	constants.SENSOR_DISTANCE:          []byte{10, 20},
-	constants.SENSOR_WALL:              []byte{35},
-	constants.SENSOR_BATTERY_CHARGE:    roomba.Pack([]interface{}{uint16(1000)}),
-	constants.SENSOR_BATTERY_CAPACITY:  roomba.Pack([]interface{}{uint16(1500)}),
-	constants.SENSOR_CURRENT:           roomba.Pack([]interface{}{int16(-747)}),
+	constants.SENSOR_BUMP_WHEELS_DROPS:       []byte{3},
+	constants.SENSOR_VIRTUAL_WALL:            []byte{5},
+	constants.SENSOR_CLIFF_RIGHT:             []byte{42},
+	constants.SENSOR_TEMPERATURE:             []byte{25},
+	constants.SENSOR_OI_MODE:                 []byte{2},
+	constants.SENSOR_SONG_NUMBER:             []byte{1},
+	constants.SENSOR_DISTANCE:                []byte{10, 20},
+	constants.SENSOR_WALL:                    []byte{35},
+	constants.SENSOR_BATTERY_CHARGE:          roomba.Pack([]interface{}{uint16(1000)}),
+	constants.SENSOR_BATTERY_CAPACITY:        roomba.Pack([]interface{}{uint16(1500)}),
+	constants.SENSOR_CURRENT:                 roomba.Pack([]interface{}{int16(-747)}),
+	constants.SENSOR_CLIFF_FRONT_LEFT_SIGNAL: roomba.Pack([]interface{}{uint8(2), uint8(25)}),
 }
 
 func (sim *RoombaSimulator) serve() {
@@ -102,14 +106,50 @@ func (sim *RoombaSimulator) executeCMD() error {
 		}
 	case constants.OpCodes["Stream"]:
 		nBytes := sim.read(1)[0]
-		if nBytes != 0 {
-			output := []byte{19, 5, 29, 2, 25, 13, 0, 182}
-			sim.write(output)
+		packetIds := make([]byte, nBytes)
+		for i := byte(0); i < nBytes; i++ {
+			packetIds[i] = sim.read(1)[0]
 		}
+		// Contains just packet ids and values, no headers.
+		sensorValues := bytes.Buffer{}
+		for i := byte(0); i < nBytes; i++ {
+			mockValue, ok := MockSensorValues[packetIds[i]]
+			if !ok {
+				log.Printf("no mock value for streaming packet id: %d", packetIds[i])
+				mockValue = make([]byte, constants.SENSOR_PACKET_LENGTH[packetIds[i]])
+			} else {
+				log.Printf("sensor %d value: %v", packetIds[i], mockValue)
+			}
+			sensorValues.WriteByte(packetIds[i])
+			sensorValues.Write(mockValue)
+		}
+
+		output := bytes.Buffer{}
+		// Header.
+		output.WriteByte(19)
+		// Data length.
+		messageLen := byte(sensorValues.Len())
+		log.Printf("message length: %d", messageLen)
+		output.WriteByte(messageLen)
+		output.Write(sensorValues.Bytes())
+		checksum := byte(0)
+		for _, b := range output.Bytes()[1:] {
+			checksum -= b
+		}
+		output.WriteByte(checksum)
+		log.Printf("checksum: %d", checksum)
+
+		sim.write(output.Bytes())
 	case constants.OpCodes["Start"]:
 		log.Printf("switched to passive mode")
 	case constants.OpCodes["Safe"]:
 		log.Printf("switched to safe mode")
+	case constants.OpCodes["ResumeStream"]:
+		if sim.read(1)[0] == byte(0) {
+			log.Printf("stream paused")
+		} else {
+			log.Printf("stream resumed")
+		}
 	case constants.OpCodes["DirectDrive"]:
 		data := sim.read(4)
 		var rigthVelocity, leftVelocity int16

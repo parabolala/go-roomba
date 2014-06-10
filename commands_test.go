@@ -49,7 +49,7 @@ func TestQueryLists(t *testing.T) {
 }
 
 func TestStream(t *testing.T) {
-	expected_data := [][]byte{{2, 25}, {0}}
+	expected_data := [][]byte{{2, 25}, {5}}
 	r := rt.MakeTestRoomba()
 	defer rt.ClearTestRoomba()
 
@@ -65,7 +65,7 @@ func TestStream(t *testing.T) {
 	for i, packet_data := range response {
 		for j, packet_byte := range packet_data {
 			if expected_data[i][j] != packet_byte {
-				t.Error("output byte doesn't match")
+				t.Errorf("output byte doesn't match (byte %d in packet %d) expected %v != actual %v", j, i, expected_data[i], packet_data)
 			}
 		}
 	}
