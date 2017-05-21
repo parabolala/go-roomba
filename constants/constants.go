@@ -6,34 +6,35 @@ var OpCodes = map[string]byte{
 	// Getting started commands
 	"Start": 128,
 	"Baud":  129,
+	"Stop":  173,
+	"Reset": 7,
 
 	// Mode commands
 	"Safe": 131,
 	"Full": 132,
 
 	// Cleaning commands
-	"Clean": 135,
-	"Max":   136,
-	"Spot":  134,
-
-	"Seek_dock":  143,
+	"Clean":      135,
+	"Max":        136,
+	"Spot":       134,
+	"SeekDock":   143,
 	"Schedule":   167,
 	"SetDayTime": 168,
 	"Power":      133,
 
 	// Actuator commands
-	"Drive":       137,
-	"DirectDrive": 145,
-	"DrivePwm":    146,
-	"Motors":      138,
-	"PwmMotors":   144,
-	"LEDs":        139,
-	//SchedulingLeds: 162
-	//DigitalLedsRaw: 163
-	//DigitalLedsASCII: 164
-	//Buttons: 165
-	"Song": 140,
-	"Play": 141,
+	"Drive":            137,
+	"DirectDrive":      145,
+	"DrivePwm":         146,
+	"Motors":           138,
+	"PwmMotors":        144,
+	"LEDs":             139,
+	"SchedulingLeds":   162,
+	"DigitalLedsRaw":   163,
+	"DigitalLedsASCII": 164,
+	"Buttons":          165,
+	"Song":             140,
+	"Play":             141,
 
 	// Input commands
 	"Sensors":      142,

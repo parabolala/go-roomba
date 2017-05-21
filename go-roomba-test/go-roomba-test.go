@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 const (
-	defaultPort = "/dev/cu.usbserial-FTTL3AW0"
+	defaultPort = "/dev/tty.usbserial-DA01NYRU"
 )
 
 var (
@@ -22,8 +23,16 @@ func main() {
 	if err != nil {
 		log.Fatal("Making roomba failed")
 	}
+	//r.Start()
 	r.Safe()
-	r.Drive(40, 200)
+	v, e := r.Sensors(31)
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
+	fmt.Println(v)
+	//r.LEDs(false, false, false, false, 0, 0)
+	r.Drive(100, 1)
 	t := time.Tick(1000 * time.Millisecond)
 	<-t
 	r.Stop()
