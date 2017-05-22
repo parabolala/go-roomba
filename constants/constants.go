@@ -1,47 +1,49 @@
 // Package constants defines values for OpenInterface op codes, sensor codes and sensor packet lengths among others.
 package constants
 
-// OpCodes is a map[string]byte that defines the op codes for Open Interface commands.
-var OpCodes = map[string]byte{
-	// Getting started commands
-	"Start": 128,
-	"Baud":  129,
-	"Stop":  173,
-	"Reset": 7,
+// OpCodes that defines the op codes for Open Interface commands.
+const (
 
-	// Mode commands
-	"Safe": 131,
-	"Full": 132,
+	// Startup OpCodes.
+	START   = 128
+	BAUD    = 129
+	STOP    = 173
+	RESET   = 7
+	CONTROL = 130
 
-	// Cleaning commands
-	"Clean":      135,
-	"Max":        136,
-	"Spot":       134,
-	"SeekDock":   143,
-	"Schedule":   167,
-	"SetDayTime": 168,
-	"Power":      133,
+	// Mode OpCodes.
+	SAFE = 131
+	FULL = 132
 
-	// Actuator commands
-	"Drive":            137,
-	"DirectDrive":      145,
-	"DrivePwm":         146,
-	"Motors":           138,
-	"PwmMotors":        144,
-	"LEDs":             139,
-	"SchedulingLeds":   162,
-	"DigitalLedsRaw":   163,
-	"DigitalLedsASCII": 164,
-	"Buttons":          165,
-	"Song":             140,
-	"Play":             141,
+	// Cleaning Commands.
+	CLEAN        = 135
+	MAX          = 136
+	SPOT         = 134
+	SEEK_DOCK    = 143
+	POWER        = 133 // Power Down.
+	SCHEDULE     = 167
+	SET_DAY_TIME = 168
 
-	// Input commands
-	"Sensors":      142,
-	"QueryList":    149,
-	"Stream":       148,
-	"ResumeStream": 150,
-}
+	// Actuator Commands.
+	DRIVE            = 137
+	DRIVE_DIRECT     = 145
+	DRIVE_PWM        = 146
+	MOTORS           = 138
+	PWM_MOTORS       = 144
+	LEDS             = 139
+	SCHEDULING_LEDS  = 162
+	DIGIT_LEDS_RAW   = 163
+	BUTTONS          = 165
+	DIGIT_LEDS_ASCII = 164
+	SONG             = 140
+	PLAY             = 141
+
+	// Input commands.
+	SENSORS             = 142
+	QUERY_LIST          = 149
+	STREAM              = 148
+	PAUSE_RESUME_STREAM = 150
+)
 
 // SENSOR_* constants define the packet IDs for declared sensor packets.
 const (
@@ -89,17 +91,6 @@ const (
 	// Roomba Remote, the Dock, Roomba 500 Virtual Walls, Create robots using
 	// the Send-IR command, and user-created devices.
 	SENSOR_IR_OMNI = 17
-
-	// This value identifies the 8-bit IR character currently being received
-	// by Roomba’s left receiver. A value of 0 indicates that no character is
-	// being received. These characters include those sent by the Roomba Remote,
-	// the Dock, Roomba 500 Virtual Walls, Create robots using the Send-IR
-	// command, and user-created devices.
-	SENSOR_IR_LEFT = 52
-
-	// Same as above for right IR receiver.
-	SENSOR_IR_RIGHT = 53
-
 	// The state of the Roomba buttons are sent as individual bits (0 = button
 	// not pressed, 1 = button pressed). The day, hour, minute, clock, and
 	// scheduling buttons that exist only on Roomba 560 and 570 will always
@@ -196,8 +187,49 @@ const (
 
 	// The radius most recently requested with a Drive command.
 	SENSOR_REQUESTED_RADIUS = 40
-	//....
-	SENSOR_ALL = 100
+
+	SENSOR_REQUESTED_RIGHT_VELOCITY = 41
+	SENSOR_REQUESTED_LEFT_VELOCITY  = 42
+	SENSOR_LEFT_ENCODER             = 43
+	SENSOR_RIGHT_ENCODER            = 44
+	SENSOR_BUMPER                   = 45
+	SENSOR_BUMP_LEFT                = 46
+	SENSOR_BUMP_FRONT_LEFT          = 47
+	SENSOR_BUMP_CENTER_LEFT         = 48
+	SENSOR_BUMP_CENTER_RIGHT        = 49
+	SENSOR_BUMP_FRONT_RIGHT         = 50
+	SENSOR_BUMP_RIGHT               = 51
+
+	// This value identifies the 8-bit IR character currently being received
+	// by Roomba’s left receiver. A value of 0 indicates that no character is
+	// being received. These characters include those sent by the Roomba Remote,
+	// the Dock, Roomba 500 Virtual Walls, Create robots using the Send-IR
+	// command, and user-created devices.
+	SENSOR_IR_LEFT = 52
+
+	// Same as above for right IR receiver.
+	SENSOR_IR_RIGHT = 53
+
+	SENSOR_LEFT_MOTOR_CURRENT       = 54
+	SENSOR_RIGHT_MOTOR_CURRENT      = 55
+	SENSOR_MAIN_BRUSH_MOTOR_CURRENT = 56
+	SENSOR_SIDE_BRUSH_MOTOR_CURRENT = 57
+
+	SENSOR_STASIS = 58
+)
+
+const (
+	SENSOR_GROUP_0   = 0
+	SENSOR_GROUP_1   = 1
+	SENSOR_GROUP_2   = 2
+	SENSOR_GROUP_3   = 3
+	SENSOR_GROUP_4   = 4
+	SENSOR_GROUP_5   = 5
+	SENSOR_GROUP_6   = 6
+	SENSOR_GROUP_100 = 100
+	SENSOR_GROUP_101 = 101
+	SENSOR_GROUP_106 = 106
+	SENSOR_GROUP_107 = 107
 )
 
 // SENSOR_PACKET_LENGTH is a map[byte]byte that defines the length in bytes of sensor data packets.
@@ -212,7 +244,7 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_WHEEL_OVERCURRENT: 1,
 	SENSOR_DIRT_DETECT:       1,
 	//unused
-	16:                              3,
+	16:                              1,
 	SENSOR_IR_OMNI:                  1,
 	SENSOR_IR_LEFT:                  1,
 	SENSOR_IR_RIGHT:                 1,
@@ -240,19 +272,37 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_NUM_STREAM_PACKETS: 1,
 	SENSOR_REQUESTED_VELOCITY: 2,
 	SENSOR_REQUESTED_RADIUS:   2,
-	//....
+
+	SENSOR_REQUESTED_RIGHT_VELOCITY: 2,
+	SENSOR_REQUESTED_LEFT_VELOCITY:  2,
+	SENSOR_LEFT_ENCODER:             2,
+	SENSOR_RIGHT_ENCODER:            2,
+	SENSOR_BUMPER:                   1,
+	SENSOR_BUMP_LEFT:                2,
+	SENSOR_BUMP_FRONT_LEFT:          2,
+	SENSOR_BUMP_CENTER_LEFT:         2,
+	SENSOR_BUMP_CENTER_RIGHT:        2,
+	SENSOR_BUMP_FRONT_RIGHT:         2,
+	SENSOR_BUMP_RIGHT:               2,
+	SENSOR_LEFT_MOTOR_CURRENT:       2,
+	SENSOR_RIGHT_MOTOR_CURRENT:      2,
+	SENSOR_MAIN_BRUSH_MOTOR_CURRENT: 2,
+	SENSOR_SIDE_BRUSH_MOTOR_CURRENT: 2,
+
+	SENSOR_STASIS: 1,
+
 	// Group packets.
-	0:          26,
-	1:          10,
-	2:          6,
-	3:          10,
-	4:          14,
-	5:          12,
-	6:          52,
-	SENSOR_ALL: 100,
-	101:        28,
-	106:        12,
-	107:        9,
+	SENSOR_GROUP_0:   26,
+	SENSOR_GROUP_1:   10,
+	SENSOR_GROUP_2:   6,
+	SENSOR_GROUP_3:   10,
+	SENSOR_GROUP_4:   14,
+	SENSOR_GROUP_5:   12,
+	SENSOR_GROUP_6:   52,
+	SENSOR_GROUP_100: 80,
+	SENSOR_GROUP_101: 28,
+	SENSOR_GROUP_106: 12,
+	SENSOR_GROUP_107: 9,
 }
 
 const WHEEL_SEPARATION = 298 // mm
