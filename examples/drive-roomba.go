@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Making roomba failed")
 	}
-	//r.Start()
+	r.Start()
 	r.Safe()
 	//r.LEDs(false, false, false, false, 0, 0)
 	//	r.Drive(100, 1)
@@ -43,19 +43,20 @@ func main() {
 		// Validate size of input
 
 		switch b {
-		case 'a':
-			r.Drive(400, -1)
 		case 'f':
-			r.Drive(200, 1)
+			r.Drive(50, -1)
+		case 'a':
+			r.Drive(50, 1)
 		case 's':
-			r.Drive(200, 32767)
+			r.Drive(100, 32767)
 		case 'd':
-			r.Drive(-200, 32767)
+			r.Drive(-100, 32767)
 		}
 
 		t := time.Tick(1000 * time.Millisecond)
 		<-t
-		r.Power()
+		r.Drive(0, 0)
+		//r.Power()
 
 	}
 

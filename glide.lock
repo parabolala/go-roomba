@@ -1,0 +1,6 @@
+hash: 156b58dac168558af69791c527ccd7b2b5bd45948f99827e99dce893f73bcd11
+updated: 2017-05-27T17:52:07.529251379-07:00
+imports:
+- name: github.com/tarm/goserial
+  version: b3440c3c63556c3fd67e915be3b92195bc70294a
+testImports: []

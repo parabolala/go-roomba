@@ -243,8 +243,10 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_VIRTUAL_WALL:      1,
 	SENSOR_WHEEL_OVERCURRENT: 1,
 	SENSOR_DIRT_DETECT:       1,
+
 	//unused
-	16:                              1,
+	16: 1,
+
 	SENSOR_IR_OMNI:                  1,
 	SENSOR_IR_LEFT:                  1,
 	SENSOR_IR_RIGHT:                 1,
@@ -263,8 +265,8 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_CLIFF_FRONT_RIGHT_SIGNAL: 2,
 	SENSOR_CLIFF_RIGHT_SIGNAL:       2,
 	//unused
-	32: 3,
-	33: 3,
+	32: 1,
+	33: 2,
 	SENSOR_CHARGING_SOURCE:    1,
 	SENSOR_OI_MODE:            1,
 	SENSOR_SONG_NUMBER:        1,
@@ -305,4 +307,25 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_GROUP_107: 9,
 }
 
+// Sensor group membership.
+var PACKET_GROUP_100 = []byte{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58}
+var PACKET_GROUP_3 = []byte{21, 22, 23, 24, 25, 26}
+var PACKET_GROUP_6 = []byte{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42}
+
 const WHEEL_SEPARATION = 298 // mm
+
+var CHARGING_STATE = map[byte]string{
+	0: "Not Charging",
+	1: "Recond. Charge",
+	2: "Charging",
+	3: "Trickle",
+	4: "Waiting",
+	5: "Fault",
+}
+
+var OI_MODE = map[byte]string{
+	0: "Off",
+	1: "Passive",
+	2: "Safe",
+	3: "Full",
+}

@@ -14,6 +14,7 @@ const (
 
 var (
 	portName = flag.String("port", defaultPort, "roomba's serial port name")
+	action   = flag.String("action", "", "safe,passive,stop,full,reset,start")
 )
 
 func main() {
@@ -23,8 +24,19 @@ func main() {
 		log.Fatal("Making roomba failed")
 	}
 
-	if e := r.Power(); e != nil {
-		fmt.Println(e)
+	switch *action {
+	case "start":
+		r.Start()
+	case "safe":
+		r.Safe()
+	case "stop":
+		r.Stop()
+	case "reset":
+		r.Reset()
+	case "full":
+		r.Full()
+	default:
+		fmt.Println("no action specified")
 	}
 
 }
