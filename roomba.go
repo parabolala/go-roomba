@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
+	"github.com/kidoman/embd"
+	_ "github.com/kidoman/embd/host/chip"
 	rb "github.com/xa4a/go-roomba/constants"
 )
 
@@ -15,27 +18,81 @@ type Roomba struct {
 	PortName     string
 	S            io.ReadWriter
 	StreamPaused chan bool
+	brcPin       embd.DigitalPin
+	keepAlive    bool
 }
 
 // MakeRoomba initializes a new Roomba structure and sets up a serial port.
-// By default, Roomba communicates at 115200 baud.
-func MakeRoomba(port_name string) (*Roomba, error) {
-	roomba := &Roomba{PortName: port_name, StreamPaused: make(chan bool, 1)}
+// By default, Roomba communicates at 115200 baud. Providing a brc port will
+// send periodic pulses to keep roomba alive in passive mode.
+func MakeRoomba(port_name string, brc string) (*Roomba, error) {
+
+	roomba := &Roomba{
+		PortName:     port_name,
+		StreamPaused: make(chan bool, 1),
+		keepAlive:    false,
+	}
+
 	baud := uint(115200)
-	err := roomba.Open(baud)
-	return roomba, err
+	if err := roomba.Open(baud); err != nil {
+		return nil, err
+	}
+
+	if brc == "" {
+		return roomba, nil
+	}
+	// embd is used to control GPIO for BRC pulse.
+	if err := embd.InitGPIO(); err != nil {
+		return nil, err
+	}
+	brcPin, err := embd.NewDigitalPin(brc)
+	if err != nil {
+		return nil, err
+	}
+	if err := brcPin.SetDirection(embd.Out); err != nil {
+		return nil, err
+	}
+	brcPin.Write(embd.High)
+	roomba.brcPin = brcPin
+	go roomba.pulseBRCRoutine() // Start keep alive loop.
+
+	return roomba, nil
+}
+
+func (this *Roomba) PulseBRC() {
+	// Pulse iRobot BRC port low for 1 second every 60 seconds to keep alive.
+	this.brcPin.Write(embd.Low)
+	time.Sleep(1 * time.Second)
+	this.brcPin.Write(embd.High)
+	// When roomba is docked, it seems to go into sleep where pulsing BRC does
+	// not wake it up. SeekDock button seems to keep it up.
+	// TODO: only press this button when already docked and charging.
+	this.ButtonPush(0x10)
+}
+
+func (this *Roomba) pulseBRCRoutine() {
+	this.PulseBRC()
+	t := time.NewTicker(30 * time.Second)
+	for {
+		<-t.C
+		if !this.keepAlive {
+			continue
+		}
+		this.PulseBRC()
+	}
 }
 
 // Start command starts the OI. You must always send the Start command before
 // sending any other commands to the OI.
 // Note: Use the Start command (128) to change the mode to Passive.
-func (this *Roomba) Start() error {
+func (this *Roomba) Start(keepAlive bool) error {
+	this.keepAlive = keepAlive
 	return this.WriteByte(rb.START)
 }
 
 // Passive switches Roomba to passive mode by sending the Start command.
 func (this *Roomba) Passive() error {
-	return this.Start()
+	return this.Start(this.keepAlive)
 }
 
 func (this *Roomba) Reset() error {
@@ -100,7 +157,7 @@ func (this *Roomba) Stop() error {
 // turn toward the right. Special cases for the radius make Roomba turn in place
 // or drive straight. A negative velocity makes Roomba drive backward. Velocity
 // is in range (-500 – 500 mm/s), radius (-2000 – 2000 mm). Special cases:
-// straight = 32768 or 32767 = hex 8000 or 7FFF, turn in place clockwise = -1,
+// straight = 32768 or 32767 = ex 8000 or 7FFF, turn in place clockwise = -1,
 // turn in place counter-clockwise = 1
 func (this *Roomba) Drive(velocity, radius int16) error {
 	if !(-500 <= velocity && velocity <= 500) {
@@ -141,6 +198,10 @@ func (this *Roomba) LEDs(check_robot, dock, spot, debris bool, power_color, powe
 	}
 	return this.Write(rb.LEDS, Pack([]interface{}{
 		led_bits, power_color, power_intensity}))
+}
+
+func (this *Roomba) ButtonPush(button byte) error {
+	return this.Write(rb.BUTTONS, Pack([]interface{}{button}))
 }
 
 // LEDDisplay displays data in the 7 segment display.
@@ -194,7 +255,6 @@ func (this *Roomba) Sensors(packet_id byte) ([]byte, error) {
 		bytes_to_read -= byte(n)
 		n, err = this.Read(result_view)
 		if err != nil {
-			log.Printf("error %v", err)
 			return result, fmt.Errorf("failed reading sensors data for packet id %d: %s", packet_id, err)
 		}
 	}

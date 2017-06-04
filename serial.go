@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/tarm/goserial"
 )
@@ -30,7 +31,12 @@ func (this *Roomba) Open(baud uint) error {
 		return errors.New(fmt.Sprintf("invalid baud rate: %d. Must be one of 115200, 19200", baud))
 	}
 
-	c := &serial.Config{Name: this.PortName, Baud: int(baud)}
+	c := &serial.Config{
+		Name:        this.PortName,
+		Baud:        int(baud),
+		ReadTimeout: time.Second * 3,
+	}
+
 	port, err := serial.OpenPort(c)
 
 	if err != nil {

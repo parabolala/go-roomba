@@ -83,7 +83,7 @@ const (
 	// The level of the dirt detect sensor (0-255).
 	SENSOR_DIRT_DETECT = 15
 
-	//unused = 16
+	SENSOR_UNUSED1 = 16
 
 	// This value identifies the 8-bit IR character currently being received by
 	// Roomba’s omnidirectional receiver.  A value of 0 indicates that no
@@ -160,7 +160,9 @@ const (
 
 	// The strength of the cliff right signal. Range: 0-4095
 	SENSOR_CLIFF_RIGHT_SIGNAL = 31
-	//unused = 32-33
+
+	SENSOR_UNUSED2 = 32
+	SENSOR_UNUSED3 = 33
 
 	// Roomba’s connection to the Home Base and Internal Charger are returned as individual bits.
 	SENSOR_CHARGING_SOURCE = 34
@@ -234,19 +236,16 @@ const (
 
 // SENSOR_PACKET_LENGTH is a map[byte]byte that defines the length in bytes of sensor data packets.
 var SENSOR_PACKET_LENGTH = map[byte]byte{
-	SENSOR_BUMP_WHEELS_DROPS: 1,
-	SENSOR_WALL:              1,
-	SENSOR_CLIFF_LEFT:        1,
-	SENSOR_CLIFF_FRONT_LEFT:  1,
-	SENSOR_CLIFF_FRONT_RIGHT: 1,
-	SENSOR_CLIFF_RIGHT:       1,
-	SENSOR_VIRTUAL_WALL:      1,
-	SENSOR_WHEEL_OVERCURRENT: 1,
-	SENSOR_DIRT_DETECT:       1,
-
-	//unused
-	16: 1,
-
+	SENSOR_BUMP_WHEELS_DROPS:        1,
+	SENSOR_WALL:                     1,
+	SENSOR_CLIFF_LEFT:               1,
+	SENSOR_CLIFF_FRONT_LEFT:         1,
+	SENSOR_CLIFF_FRONT_RIGHT:        1,
+	SENSOR_CLIFF_RIGHT:              1,
+	SENSOR_VIRTUAL_WALL:             1,
+	SENSOR_WHEEL_OVERCURRENT:        1,
+	SENSOR_DIRT_DETECT:              1,
+	SENSOR_UNUSED1:                  1,
 	SENSOR_IR_OMNI:                  1,
 	SENSOR_IR_LEFT:                  1,
 	SENSOR_IR_RIGHT:                 1,
@@ -264,17 +263,15 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_CLIFF_FRONT_LEFT_SIGNAL:  2,
 	SENSOR_CLIFF_FRONT_RIGHT_SIGNAL: 2,
 	SENSOR_CLIFF_RIGHT_SIGNAL:       2,
-	//unused
-	32: 1,
-	33: 2,
-	SENSOR_CHARGING_SOURCE:    1,
-	SENSOR_OI_MODE:            1,
-	SENSOR_SONG_NUMBER:        1,
-	SENSOR_SONG_PLAYING:       1,
-	SENSOR_NUM_STREAM_PACKETS: 1,
-	SENSOR_REQUESTED_VELOCITY: 2,
-	SENSOR_REQUESTED_RADIUS:   2,
-
+	SENSOR_UNUSED2:                  1,
+	SENSOR_UNUSED3:                  2,
+	SENSOR_CHARGING_SOURCE:          1,
+	SENSOR_OI_MODE:                  1,
+	SENSOR_SONG_NUMBER:              1,
+	SENSOR_SONG_PLAYING:             1,
+	SENSOR_NUM_STREAM_PACKETS:       1,
+	SENSOR_REQUESTED_VELOCITY:       2,
+	SENSOR_REQUESTED_RADIUS:         2,
 	SENSOR_REQUESTED_RIGHT_VELOCITY: 2,
 	SENSOR_REQUESTED_LEFT_VELOCITY:  2,
 	SENSOR_LEFT_ENCODER:             2,
@@ -290,8 +287,7 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 	SENSOR_RIGHT_MOTOR_CURRENT:      2,
 	SENSOR_MAIN_BRUSH_MOTOR_CURRENT: 2,
 	SENSOR_SIDE_BRUSH_MOTOR_CURRENT: 2,
-
-	SENSOR_STASIS: 1,
+	SENSOR_STASIS:                   1,
 
 	// Group packets.
 	SENSOR_GROUP_0:   26,
@@ -309,14 +305,15 @@ var SENSOR_PACKET_LENGTH = map[byte]byte{
 
 // Sensor group membership.
 var PACKET_GROUP_100 = []byte{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58}
+var PACKET_GROUP_101 = []byte{43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58}
 var PACKET_GROUP_3 = []byte{21, 22, 23, 24, 25, 26}
 var PACKET_GROUP_6 = []byte{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42}
 
 const WHEEL_SEPARATION = 298 // mm
 
 var CHARGING_STATE = map[byte]string{
-	0: "Not Charging",
-	1: "Recond. Charge",
+	0: "No Charge",
+	1: "Recond.",
 	2: "Charging",
 	3: "Trickle",
 	4: "Waiting",
@@ -328,4 +325,70 @@ var OI_MODE = map[byte]string{
 	1: "Passive",
 	2: "Safe",
 	3: "Full",
+}
+
+var SENSORS_NAME = map[byte]string{
+	SENSOR_BUMP_WHEELS_DROPS:        "Bump & Wheel Drop",
+	SENSOR_WALL:                     "Wall",
+	SENSOR_CLIFF_LEFT:               "Cliff Left",
+	SENSOR_CLIFF_FRONT_LEFT:         "Cliff Front Left",
+	SENSOR_CLIFF_FRONT_RIGHT:        "Cliff Front Right",
+	SENSOR_CLIFF_RIGHT:              "Cliff Right",
+	SENSOR_VIRTUAL_WALL:             "Virtual Wall",
+	SENSOR_WHEEL_OVERCURRENT:        "Wheel Overcurrent",
+	SENSOR_DIRT_DETECT:              "Dirt Detect",
+	SENSOR_UNUSED1:                  "Unused 1",
+	SENSOR_IR_OMNI:                  "Omni IR Code",
+	SENSOR_BUTTONS:                  "Buttons",
+	SENSOR_DISTANCE:                 "Distance",
+	SENSOR_ANGLE:                    "Angle",
+	SENSOR_CHARGING:                 "Charging",
+	SENSOR_VOLTAGE:                  "Voltage",
+	SENSOR_CURRENT:                  "Current",
+	SENSOR_TEMPERATURE:              "Temperature",
+	SENSOR_BATTERY_CHARGE:           "Battery Charge",
+	SENSOR_BATTERY_CAPACITY:         "Battery Capacity",
+	SENSOR_WALL_SIGNAL:              "Wall Signal",
+	SENSOR_CLIFF_LEFT_SIGNAL:        "Cliff Left Signal",
+	SENSOR_CLIFF_FRONT_LEFT_SIGNAL:  "Cliff Front Left Signal",
+	SENSOR_CLIFF_FRONT_RIGHT_SIGNAL: "Cliff Front Right Signal",
+	SENSOR_CLIFF_RIGHT_SIGNAL:       "Cliff Right Signal",
+	SENSOR_UNUSED2:                  "Unused 2",
+	SENSOR_UNUSED3:                  "Unused 3",
+	SENSOR_CHARGING_SOURCE:          "Charging Source",
+	SENSOR_OI_MODE:                  "OI Mode",
+	SENSOR_SONG_NUMBER:              "Song Number",
+	SENSOR_SONG_PLAYING:             "Song Playing",
+	SENSOR_NUM_STREAM_PACKETS:       "Num Stream Packets",
+	SENSOR_REQUESTED_VELOCITY:       "Req. Velocity",
+	SENSOR_REQUESTED_RADIUS:         "Req. Radius",
+	SENSOR_REQUESTED_RIGHT_VELOCITY: "Req. Right Velocity",
+	SENSOR_REQUESTED_LEFT_VELOCITY:  "Req. Left Velocity",
+	SENSOR_LEFT_ENCODER:             "Left Encoder",
+	SENSOR_RIGHT_ENCODER:            "Right Encoder",
+	SENSOR_BUMPER:                   "Bumper",
+	SENSOR_BUMP_LEFT:                "Bumper Left Signal",
+	SENSOR_BUMP_FRONT_LEFT:          "Bumper Front Left Signal",
+	SENSOR_BUMP_CENTER_LEFT:         "Bumper Center Left Signal",
+	SENSOR_BUMP_CENTER_RIGHT:        "Bumper Center Right Signal",
+	SENSOR_BUMP_FRONT_RIGHT:         "Bumper Front Right Signal",
+	SENSOR_BUMP_RIGHT:               "Bumper Right Signal",
+	SENSOR_IR_LEFT:                  "IR Code Left",
+	SENSOR_IR_RIGHT:                 "IR Code Right",
+	SENSOR_LEFT_MOTOR_CURRENT:       "Left Motor Current",
+	SENSOR_RIGHT_MOTOR_CURRENT:      "Right Motor Current",
+	SENSOR_MAIN_BRUSH_MOTOR_CURRENT: "Main Brush Current",
+	SENSOR_SIDE_BRUSH_MOTOR_CURRENT: "Side Brush Current",
+	SENSOR_STASIS:                   "Stasis",
+}
+
+var IR_CODE_NAMES = map[byte]string{
+	0:   "No IR Detected",
+	161: "Force Field",
+	164: "Green Buoy",
+	165: "Green Buoy and Force Field",
+	168: "Red Buoy",
+	169: "Red Buoy and Force Field",
+	172: "Red and Green Buoy",
+	173: "Red, Green Buoy and Force Field",
 }
