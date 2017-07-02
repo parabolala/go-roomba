@@ -1,3 +1,0 @@
-package: github.com/xa4a/go-roomba
-import:
-- package: github.com/tarm/goserial

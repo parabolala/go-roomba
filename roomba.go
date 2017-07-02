@@ -9,9 +9,8 @@ import (
 	"log"
 	"time"
 
+	rb "github.com/deepakkamesh/go-roomba/constants"
 	"github.com/kidoman/embd"
-	_ "github.com/kidoman/embd/host/chip"
-	rb "github.com/xa4a/go-roomba/constants"
 )
 
 type Roomba struct {
