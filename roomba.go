@@ -59,7 +59,7 @@ func MakeRoomba(port_name string, brc string) (*Roomba, error) {
 }
 
 func (this *Roomba) PulseBRC() {
-	// Pulse iRobot BRC port low for 1 second every 60 seconds to keep alive.
+	// Pulse iRobot BRC port low for 1 second every 30 seconds to keep alive.
 	this.brcPin.Write(embd.Low)
 	time.Sleep(1 * time.Second)
 	this.brcPin.Write(embd.High)
