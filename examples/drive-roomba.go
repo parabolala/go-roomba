@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xa4a/go-roomba"
+	roomba "github.com/deepakkamesh/go-roomba"
 )
 
 const (
@@ -20,17 +20,13 @@ var (
 
 func main() {
 	flag.Parse()
-	r, err := roomba.MakeRoomba(*portName)
+	r, err := roomba.MakeRoomba(*portName, "LCD-D22")
 	if err != nil {
-		log.Fatal("Making roomba failed")
+		log.Fatalf("Making roomba failedi %v", err)
 	}
-	r.Start()
+	r.Start(true)
 	r.Safe()
-	//r.LEDs(false, false, false, false, 0, 0)
-	//	r.Drive(100, 1)
-	//	t := time.Tick(1000 * time.Millisecond)
-	//	<-t
-	//	r.Stop()
+
 	in := bufio.NewReader(os.Stdin)
 
 	for {
@@ -51,13 +47,14 @@ func main() {
 			r.Drive(100, 32767)
 		case 'd':
 			r.Drive(-100, 32767)
+		case 'n':
+			r.MainBrush(false, true)
+		case 'y':
+			r.MainBrush(true, true)
 		}
 
-		t := time.Tick(1000 * time.Millisecond)
-		<-t
+		time.Sleep(500 * time.Millisecond)
 		r.Drive(0, 0)
 		//r.Power()
-
 	}
-
 }

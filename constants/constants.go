@@ -45,6 +45,13 @@ const (
 	PAUSE_RESUME_STREAM = 150
 )
 
+// Motors.
+const (
+	MAIN_BRUSH byte = 4
+	VACUUM          = 2
+	SIDE_BRUSH      = 1
+)
+
 // SENSOR_* constants define the packet IDs for declared sensor packets.
 const (
 	// The state of the bumper (0 = no bump, 1 = bump) and wheel drop sensors

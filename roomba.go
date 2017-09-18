@@ -183,6 +183,21 @@ func (this *Roomba) DirectDrive(right, left int16) error {
 	return this.Write(rb.DRIVE_DIRECT, Pack([]interface{}{right, left}))
 }
 
+// MainBrush controls the main brush motor.
+func (this *Roomba) MainBrush(on bool, defaultDir bool) error {
+	var cmd byte
+	if !defaultDir {
+		cmd = cmd | 16
+	}
+
+	if on {
+		cmd = cmd | rb.MAIN_BRUSH
+		return this.Write(rb.MOTORS, Pack([]interface{}{cmd}))
+	}
+	cmd = cmd
+	return this.Write(rb.MOTORS, Pack([]interface{}{cmd}))
+}
+
 // LEDs command controls the LEDs common to all models of Roomba 500. The
 // Clean/Power LED is specified by two data bytes: one for the color and the
 // other for the intensity. Color: 0 = green, 255 = red. Intermediate values are
