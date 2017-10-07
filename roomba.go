@@ -9,22 +9,23 @@ import (
 	"log"
 	"time"
 
+	"gobot.io/x/gobot/drivers/gpio"
+
 	rb "github.com/deepakkamesh/go-roomba/constants"
-	"github.com/kidoman/embd"
 )
 
 type Roomba struct {
 	PortName     string
 	S            io.ReadWriter
 	StreamPaused chan bool
-	brcPin       embd.DigitalPin
+	brcPin       *gpio.DirectPinDriver
 	keepAlive    bool
 }
 
 // MakeRoomba initializes a new Roomba structure and sets up a serial port.
 // By default, Roomba communicates at 115200 baud. Providing a brc port will
 // send periodic pulses to keep roomba alive in passive mode.
-func MakeRoomba(port_name string, brc string) (*Roomba, error) {
+func MakeRoomba(port_name string, brc *gpio.DirectPinDriver) (*Roomba, error) {
 
 	roomba := &Roomba{
 		PortName:     port_name,
@@ -37,47 +38,33 @@ func MakeRoomba(port_name string, brc string) (*Roomba, error) {
 		return nil, err
 	}
 
-	if brc == "" {
+	if brc == nil {
 		return roomba, nil
 	}
-	// embd is used to control GPIO for BRC pulse.
-	if err := embd.InitGPIO(); err != nil {
-		return nil, err
-	}
-	brcPin, err := embd.NewDigitalPin(brc)
-	if err != nil {
-		return nil, err
-	}
-	if err := brcPin.SetDirection(embd.Out); err != nil {
-		return nil, err
-	}
-	brcPin.Write(embd.High)
-	roomba.brcPin = brcPin
-	go roomba.pulseBRCRoutine() // Start keep alive loop.
+
+	// Setup BRC routine to keepalive.
+	brc.DigitalWrite(1)
+	roomba.brcPin = brc
+	go roomba.PulseBRC()
 
 	return roomba, nil
 }
 
 func (this *Roomba) PulseBRC() {
-	// Pulse iRobot BRC port low for 1 second every 30 seconds to keep alive.
-	this.brcPin.Write(embd.Low)
-	time.Sleep(1 * time.Second)
-	this.brcPin.Write(embd.High)
-	// When roomba is docked, it seems to go into sleep where pulsing BRC does
-	// not wake it up. SeekDock button seems to keep it up.
-	// TODO: only press this button when already docked and charging.
-	this.ButtonPush(0x10)
-}
-
-func (this *Roomba) pulseBRCRoutine() {
-	this.PulseBRC()
-	t := time.NewTicker(30 * time.Second)
 	for {
-		<-t.C
+		time.Sleep(30 * time.Second)
 		if !this.keepAlive {
 			continue
 		}
-		this.PulseBRC()
+
+		// Pulse iRobot BRC port low for 1 second every 30 seconds to keep alive.
+		this.brcPin.DigitalWrite(0)
+		time.Sleep(1 * time.Second)
+		this.brcPin.DigitalWrite(1)
+		// When roomba is docked, it seems to go into sleep where pulsing BRC does
+		// not wake it up. SeekDock button seems to keep it up.
+		// TODO: only press this button when already docked and charging.
+		this.ButtonPush(0x10)
 	}
 }
 
