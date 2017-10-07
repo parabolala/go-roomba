@@ -36,6 +36,13 @@ func main() {
 		panic(err)
 	}
 
+	// Enable pin
+	en := gpio.NewDirectPinDriver(pi, "38")
+	if err := en.Start(); err != nil {
+		panic(err)
+	}
+	en.DigitalWrite(0)
+
 	// Initialize Roomba.
 	r, err := roomba.MakeRoomba(*portName, d)
 	if err != nil {
@@ -82,6 +89,16 @@ func main() {
 			}
 		case 'y':
 			if err := r.MainBrush(true, true); err != nil {
+				panic(err)
+			}
+
+		case 'e':
+			if err := en.DigitalWrite(1); err != nil {
+				panic(err)
+			}
+
+		case 'r':
+			if err := en.DigitalWrite(0); err != nil {
 				panic(err)
 			}
 
