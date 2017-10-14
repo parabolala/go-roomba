@@ -31,13 +31,13 @@ func main() {
 	if err := pi.Connect(); err != nil {
 		panic(err)
 	}
-	d := gpio.NewDirectPinDriver(pi, "40")
+	d := gpio.NewDirectPinDriver(pi, "7")
 	if err := d.Start(); err != nil {
 		panic(err)
 	}
 
 	// Enable pin
-	en := gpio.NewDirectPinDriver(pi, "38")
+	en := gpio.NewDirectPinDriver(pi, "11")
 	if err := en.Start(); err != nil {
 		panic(err)
 	}
