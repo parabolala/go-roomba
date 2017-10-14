@@ -1,1 +1,11 @@
 pkg
+go-roomba-test
+vendor
+
+# Ignore 'examples' dir
+examples/
+# or
+*/examples/*
+
+# Unignore all `.go` in `examples` dir
+!*/examples/*.go

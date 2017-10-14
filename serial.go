@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/tarm/goserial"
 )
@@ -30,7 +31,12 @@ func (this *Roomba) Open(baud uint) error {
 		return errors.New(fmt.Sprintf("invalid baud rate: %d. Must be one of 115200, 19200", baud))
 	}
 
-	c := &serial.Config{Name: this.PortName, Baud: int(baud)}
+	c := &serial.Config{
+		Name:        this.PortName,
+		Baud:        int(baud),
+		ReadTimeout: time.Second * 3,
+	}
+
 	port, err := serial.OpenPort(c)
 
 	if err != nil {
@@ -44,7 +50,7 @@ func (this *Roomba) Open(baud uint) error {
 
 // Writes the given opcode byte and a sequence of data bytes to the serial port.
 func (this *Roomba) Write(opcode byte, p []byte) error {
-	log.Printf("Writing opcode: %v, data %v", opcode, p)
+	//glog.V(2).Infof("Writing opcode: %v, data %v", opcode, p)
 	n, err := this.S.Write([]byte{opcode})
 	if n != 1 || err != nil {
 		return fmt.Errorf("failed writing opcode %d to serial interface",
